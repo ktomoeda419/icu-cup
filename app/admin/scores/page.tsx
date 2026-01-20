@@ -9,6 +9,23 @@ type Row = {
 };
 
 const STORAGE_KEY = "icu_scores_draft_v1";
+const PLAYERS_KEY = "icu_players_v1";
+
+type Gender = "M" | "F";
+type Player = {
+  id: string;
+  name: string;
+  gender: Gender;
+  aliases: string[];
+};
+
+function normalize(s: string) {
+  return (s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[‐-–—−]/g, "-");
+}
 
 export default function ScoresPage() {
   // 初期ロードが完了したか（復元→保存の順序事故を防ぐ）
@@ -17,6 +34,14 @@ export default function ScoresPage() {
   const [rows, setRows] = useState<Row[]>(
     Array.from({ length: 6 }, () => ({ name: "", out: "", in: "" }))
   );
+  const [players, setPlayers] = useState<Player[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PLAYERS_KEY);
+      if (saved) setPlayers(JSON.parse(saved));
+    } catch {}
+  }, []);
 
   // 初回：保存データがあれば復元（ここが終わるまで保存しない）
   useEffect(() => {
@@ -50,6 +75,15 @@ export default function ScoresPage() {
     r.out !== "" && r.in !== "" ? Number(r.out) + Number(r.in) : "";
 
   const invalidOutIn = (v: number | "") => v !== "" && (v < 30 || v > 80);
+  const matchPlayer = (nameRaw: string): Player | null => {
+    const key = normalize(nameRaw);
+    if (!key) return null;
+    for (const p of players) {
+      const keys = [p.name, ...(p.aliases || [])].map(normalize);
+      if (keys.includes(key)) return p;
+    }
+    return null;
+  };
 
   const downloadCsv = () => {
     const header = ["name", "out", "in", "total"];
@@ -101,6 +135,7 @@ export default function ScoresPage() {
             <th>OUT</th>
             <th>IN</th>
             <th>TOTAL</th>
+            <th>一致</th>
             <th></th>
           </tr>
         </thead>
@@ -146,6 +181,13 @@ export default function ScoresPage() {
                 />
               </td>
               <td>{total(r)}</td>
+              <td>
+                {matchPlayer(r.name) ? (
+                  <span style={{ color: "#008800" }}>✓</span>
+                ) : (
+                  <span style={{ color: "#ff0000" }}>✗</span>
+                )}
+              </td>
               <td>
                 <button onClick={() => removeRow(i)}>削除</button>
               </td>
