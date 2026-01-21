@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { routes } from "../lib/routes";
 
@@ -20,7 +22,17 @@ const Card = ({
         borderRadius: 12,
         textDecoration: "none",
         color: "inherit",
-        transition: "all 0.2s",
+        transition: "transform 0.15s, box-shadow 0.15s",
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLAnchorElement;
+        el.style.transform = "translateY(-2px)";
+        el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLAnchorElement;
+        el.style.transform = "translateY(0)";
+        el.style.boxShadow = "none";
       }}
     >
       <h2 style={{ margin: 0 }}>{title}</h2>
@@ -28,6 +40,7 @@ const Card = ({
     </Link>
   );
 };
+
 
 export default function HomePage() {
   return (
