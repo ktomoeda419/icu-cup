@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabase";
-import { differential, handicapV1 } from "@/lib/handicap";
+import { supabase } from "../../../lib/supabase";
+import { differential, handicapV1 } from "../../../lib/handicap";
 
 export default async function PlayerDetail({ params }: { params: { id: string } }) {
   const playerId = params.id;
