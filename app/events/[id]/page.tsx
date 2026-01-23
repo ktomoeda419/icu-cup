@@ -3,6 +3,7 @@ import { differential, handicapV1 } from "@/lib/handicap";
 import ResultsTable from "./ResultsTable";
 
 export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 export default async function EventDetailPage({
   params,
@@ -26,6 +27,11 @@ export default async function EventDetailPage({
   if (!event) {
     return <main style={{ padding: 24 }}>Event not found</main>;
   }
+
+  // course が配列で返るケースに対応
+  const eventCourse = Array.isArray((event as any).course)
+    ? (event as any).course[0]
+    : (event as any).course;
 
   // スコア（全員分）
   const { data: scores, error: scoreError } = await supabase
@@ -59,7 +65,7 @@ export default async function EventDetailPage({
     const gender = r.player?.gender ?? "M";
 
     // そのプレーヤーの「この大会より前」のスコア
-    const { data: pastScores } = await supabase
+    const { data: pastScores, error: pastError } = await supabase
       .from("scores")
       .select(
         `
@@ -76,15 +82,25 @@ export default async function EventDetailPage({
       `
       )
       .eq("player_id", pid)
-      .lt("event.event_date", event.event_date);
+      .lt("event.event_date", (event as any).event_date);
+
+    if (pastError) {
+      return <main style={{ padding: 24 }}>Error: {pastError.message}</main>;
+    }
 
     const diffs: number[] = [];
 
     for (const ps of pastScores || []) {
-      const course = ps.event?.course;
+      // event / course が配列で返るケースに対応
+      const ev = Array.isArray((ps as any).event)
+        ? (ps as any).event[0]
+        : (ps as any).event;
+
+      const courseRaw = ev?.course;
+      const course = Array.isArray(courseRaw) ? courseRaw[0] : courseRaw;
       if (!course) continue;
 
-      const gross = Number(ps.total_score);
+      const gross = Number((ps as any).total_score);
       const cr =
         gender === "M"
           ? Number(course.regular_course_rating)
@@ -130,9 +146,9 @@ export default async function EventDetailPage({
 
   return (
     <main style={{ padding: 24 }}>
-      <h1>{event.name}</h1>
+      <h1>{(event as any).name}</h1>
       <p style={{ color: "#666" }}>
-        {event.event_date} / {event.course?.name}
+        {(event as any).event_date} / {eventCourse?.name ?? "-"}
       </p>
 
       <h2 style={{ marginTop: 16 }}>結果</h2>
