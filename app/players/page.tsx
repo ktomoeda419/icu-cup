@@ -1,44 +1,34 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 
-type Player = { id: string; name: string; gender: "M" | "F" };
+export const revalidate = 0;
 
-export default function PlayersPage() {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [error, setError] = useState<string>("");
+export default async function PlayersPage() {
+  const { data: players, error } = await supabase
+    .from("players")
+    .select("id,name,gender")
+    .order("name", { ascending: true });
 
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await supabase
-        .from("players")
-        .select("id,name,gender")
-        .order("name", { ascending: true });
-
-      if (error) setError(error.message);
-      else setPlayers((data || []) as Player[]);
-    })();
-  }, []);
+  if (error) {
+    return <main style={{ padding: 24 }}>Error: {error.message}</main>;
+  }
 
   return (
     <main style={{ padding: 24 }}>
       <h1>Players</h1>
 
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
-
-      <ul>
-        {players.map((p) => (
-          <li key={p.id}>
-            <Link href={`/players/${p.id}`}>{p.name}</Link>（{p.gender === "M" ? "男" : "女"}）
+      <ul style={{ paddingLeft: 18 }}>
+        {(players || []).map((p) => (
+          <li key={p.id} style={{ margin: "8px 0" }}>
+            <Link href={`/players/${p.id}`} style={{ textDecoration: "none" }}>
+              {p.name}
+            </Link>{" "}
+            <span style={{ color: "#666" }}>
+              ({p.gender === "M" ? "M / Regular" : "F / Red"})
+            </span>
           </li>
         ))}
       </ul>
-
-      {(!error && players.length === 0) && (
-        <p style={{ color: "#666" }}>まだDBにプレーヤーがいません（SupabaseにplayersをInsertしてね）</p>
-      )}
     </main>
   );
 }

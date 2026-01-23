@@ -3,4 +3,5 @@ export const routes = {
   players: "/players",
   adminScores: "/admin/scores",
   adminPlayers: "/admin/players",
+  events: "/events",
 };

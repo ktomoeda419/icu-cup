@@ -41,14 +41,11 @@ const Card = ({
   );
 };
 
-
 export default function HomePage() {
   return (
     <main style={{ padding: 32, maxWidth: 900, margin: "0 auto" }}>
       <h1>ICU杯</h1>
-      <p style={{ color: "#666" }}>
-        ICU高校34期生 ゴルフ大会ポータル
-      </p>
+      <p style={{ color: "#666" }}>ICU高校34期生 ゴルフ大会ポータル</p>
 
       <div
         style={{
@@ -59,15 +56,23 @@ export default function HomePage() {
         }}
       >
         <Card
+          title="Events"
+          description="大会一覧・全員の結果（歴史アーカイブ）"
+          href="/events"
+        />
+
+        <Card
           title="Players"
           description="プレーヤー一覧・個人成績・ハンディキャップ"
           href={routes.players}
         />
+
         <Card
           title="Scores（幹事）"
           description="成績入力・大会管理"
           href={routes.adminScores}
         />
+
         <Card
           title="Players管理（幹事）"
           description="プレーヤーマスタ・名寄せ・性別"
