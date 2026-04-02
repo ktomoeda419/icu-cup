@@ -6,7 +6,7 @@ export function differential(gross: number, courseRating: number, slope: number)
 
 export function handicapV1(diffs: number[]) {
   // diffs: 過去のdifferential配列（小さいほど良い）
-  const cleaned = diffs.filter((x) => Number.isFinite(x)).slice(-50); // 念のため
+  const cleaned = diffs.filter((x) => Number.isFinite(x)).slice(-50);
   if (cleaned.length === 0) return 48;
 
   const last5 = cleaned.slice(-5);

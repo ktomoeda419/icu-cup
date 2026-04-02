@@ -104,9 +104,7 @@ export default async function EventDetailPage({
         </div>
       </div>
 
-      <p className="mt-4 text-xs text-slate-400">
-        ※ Net = Gross − この大会時点のHC（V1）
-      </p>
+
     </div>
   );
 }
