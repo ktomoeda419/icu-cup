@@ -37,10 +37,18 @@ export async function POST(req: NextRequest) {
     Buffer.from(fileData.content, "base64").toString("utf-8")
   );
 
-  const updated = [...current, newEvent];
+  const exists = current.some((e: any) => e.id === newEvent.id);
+  const updated = exists
+    ? current.map((e: any) => (e.id === newEvent.id ? newEvent : e))
+    : [...current, newEvent];
+
   const newContentBase64 = Buffer.from(
     JSON.stringify(updated, null, 2)
   ).toString("base64");
+
+  const commitMessage = exists
+    ? `大会を更新: ${newEvent.name} (${newEvent.event_date})`
+    : `大会を追加: ${newEvent.name} (${newEvent.event_date})`;
 
   // ファイルを更新（コミット）
   const updateRes = await fetch(
@@ -53,7 +61,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        message: `大会を追加: ${newEvent.name} (${newEvent.event_date})`,
+        message: commitMessage,
         content: newContentBase64,
         sha: fileData.sha,
       }),
