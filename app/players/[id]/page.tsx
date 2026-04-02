@@ -10,7 +10,11 @@ export default async function PlayerDetail({
   const { id: playerId } = await params;
 
   const player = getPlayer(playerId);
-  if (!player) return <main style={{ padding: 24 }}>Player not found</main>;
+  if (!player) {
+    return (
+      <div className="py-16 text-center text-slate-500">Player not found</div>
+    );
+  }
 
   const scores = getScoresForPlayer(playerId);
 
@@ -78,90 +82,132 @@ export default async function PlayerDetail({
   const hc = diffsForHc.length > 0 ? handicapV1(diffsForHc) : 0;
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>{player.name}</h1>
-      <p>性別: {player.gender === "M" ? "男性（Regular）" : "女性（Red）"}</p>
-      <p>
-        <b>現在HC（V1）:</b> {hc}
-      </p>
-      <p style={{ color: "#666" }}>HC計算に使用したラウンド数: {diffsForHc.length}</p>
+    <div>
+      {/* Player Card */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xl flex-shrink-0">
+            {player.name.slice(0, 1)}
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-slate-900">{player.name}</h1>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  player.gender === "M"
+                    ? "bg-blue-50 text-blue-600"
+                    : "bg-pink-50 text-pink-600"
+                }`}
+              >
+                {player.gender === "M" ? "男性 / Regular" : "女性 / Red"}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-slate-400 mb-1">現在HC（V1）</p>
+            <p className="text-3xl font-extrabold text-emerald-700">{hc}</p>
+            <p className="text-xs text-slate-400 mt-1">{diffsForHc.length}ラウンド</p>
+          </div>
+        </div>
+      </div>
 
-      <h2 style={{ marginTop: 24 }}>HC推移（グラフ）</h2>
-      <HcChart data={trend} />
+      {/* HC Chart */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-slate-900">HC推移（グラフ）</h2>
+        </div>
+        <div className="p-6">
+          <HcChart data={trend} />
+        </div>
+      </div>
 
-      <h2 style={{ marginTop: 16 }}>HC推移（V1）</h2>
-      <table border={1} cellPadding={8} style={{ marginTop: 8, width: "100%" }}>
-        <thead>
-          <tr>
-            <th>日付</th>
-            <th>大会</th>
-            <th>コース</th>
-            <th>Gross</th>
-            <th>CR</th>
-            <th>Slope</th>
-            <th>Diff</th>
-            <th>HC(累積)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {trend.map((t, i) => (
-            <tr key={i}>
-              <td>{t.event_date}</td>
-              <td>{t.event_name}</td>
-              <td>{t.course_name}</td>
-              <td>
-                <b>{t.gross}</b>
-              </td>
-              <td>{t.cr ?? "-"}</td>
-              <td>{t.slope ?? "-"}</td>
-              <td>{t.diff == null ? "-" : t.diff.toFixed(1)}</td>
-              <td>{t.hc_after == null ? "-" : t.hc_after}</td>
-            </tr>
-          ))}
-          {trend.length === 0 && (
-            <tr>
-              <td colSpan={8} style={{ color: "#666" }}>
-                まだスコアがありません
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      {/* HC Trend Table */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-slate-900">HC推移（V1）</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 text-slate-500 text-xs uppercase tracking-wide">
+                <th className="px-4 py-3 text-left font-semibold">日付</th>
+                <th className="px-4 py-3 text-left font-semibold">大会</th>
+                <th className="px-4 py-3 text-left font-semibold">コース</th>
+                <th className="px-4 py-3 text-right font-semibold">Gross</th>
+                <th className="px-4 py-3 text-right font-semibold">CR</th>
+                <th className="px-4 py-3 text-right font-semibold">Slope</th>
+                <th className="px-4 py-3 text-right font-semibold">Diff</th>
+                <th className="px-4 py-3 text-right font-semibold">HC(累積)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {trend.map((t, i) => (
+                <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                  <td className="px-4 py-3 text-slate-500">{t.event_date}</td>
+                  <td className="px-4 py-3 text-slate-700">{t.event_name}</td>
+                  <td className="px-4 py-3 text-slate-500">{t.course_name}</td>
+                  <td className="px-4 py-3 text-right font-bold text-slate-900">{t.gross}</td>
+                  <td className="px-4 py-3 text-right text-slate-500">{t.cr ?? "-"}</td>
+                  <td className="px-4 py-3 text-right text-slate-500">{t.slope ?? "-"}</td>
+                  <td className="px-4 py-3 text-right text-slate-500">
+                    {t.diff == null ? "-" : t.diff.toFixed(1)}
+                  </td>
+                  <td className="px-4 py-3 text-right font-semibold text-emerald-700">
+                    {t.hc_after == null ? "-" : t.hc_after}
+                  </td>
+                </tr>
+              ))}
+              {trend.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
+                    まだスコアがありません
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      <h2 style={{ marginTop: 16 }}>スコア履歴</h2>
-      <table border={1} cellPadding={8}>
-        <thead>
-          <tr>
-            <th>日付</th>
-            <th>大会</th>
-            <th>コース</th>
-            <th>OUT</th>
-            <th>IN</th>
-            <th>TOTAL</th>
-          </tr>
-        </thead>
-        <tbody>
-          {scores.map((s, i) => (
-            <tr key={i}>
-              <td>{s.event.event_date || "-"}</td>
-              <td>{s.event.name || "-"}</td>
-              <td>{s.event.course?.name || "-"}</td>
-              <td>{s.out_score ?? "-"}</td>
-              <td>{s.in_score ?? "-"}</td>
-              <td>
-                <b>{s.total_score}</b>
-              </td>
-            </tr>
-          ))}
-          {scores.length === 0 && (
-            <tr>
-              <td colSpan={6} style={{ color: "#666" }}>
-                まだスコアがありません
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </main>
+      {/* Score History Table */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-slate-900">スコア履歴</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 text-slate-500 text-xs uppercase tracking-wide">
+                <th className="px-4 py-3 text-left font-semibold">日付</th>
+                <th className="px-4 py-3 text-left font-semibold">大会</th>
+                <th className="px-4 py-3 text-left font-semibold">コース</th>
+                <th className="px-4 py-3 text-right font-semibold">OUT</th>
+                <th className="px-4 py-3 text-right font-semibold">IN</th>
+                <th className="px-4 py-3 text-right font-semibold">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {scores.map((s, i) => (
+                <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                  <td className="px-4 py-3 text-slate-500">{s.event.event_date || "-"}</td>
+                  <td className="px-4 py-3 text-slate-700">{s.event.name || "-"}</td>
+                  <td className="px-4 py-3 text-slate-500">{s.event.course?.name || "-"}</td>
+                  <td className="px-4 py-3 text-right text-slate-500">{s.out_score ?? "-"}</td>
+                  <td className="px-4 py-3 text-right text-slate-500">{s.in_score ?? "-"}</td>
+                  <td className="px-4 py-3 text-right font-bold text-slate-900">{s.total_score}</td>
+                </tr>
+              ))}
+              {scores.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                    まだスコアがありません
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }

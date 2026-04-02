@@ -11,20 +11,18 @@ export const metadata: Metadata = {
 const NavLink = ({
   href,
   label,
+  small,
 }: {
   href: string;
   label: string;
+  small?: boolean;
 }) => {
   return (
     <Link
       href={href}
-      style={{
-        padding: "8px 12px",
-        borderRadius: 10,
-        textDecoration: "none",
-        color: "rgba(0,0,0,0.75)",
-        background: "rgba(0,0,0,0.03)",
-      }}
+      className={`px-3 py-1.5 rounded-lg text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors ${
+        small ? "text-xs" : "text-sm font-medium"
+      }`}
     >
       {label}
     </Link>
@@ -38,54 +36,32 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body>
-        <header
-          style={{
-            borderBottom: "1px solid rgba(0,0,0,0.06)",
-            position: "sticky",
-            top: 0,
-            background: "rgba(250,250,250,0.9)",
-            backdropFilter: "blur(8px)",
-            zIndex: 10,
-          }}
-        >
-          <div
-            style={{
-              maxWidth: 980,
-              margin: "0 auto",
-              padding: "14px 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
+      <body className="font-sans antialiased bg-gray-50 text-slate-900">
+        <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <Link
               href={routes.home}
-              style={{
-                fontWeight: 800,
-                textDecoration: "none",
-                color: "inherit",
-                letterSpacing: "0.02em",
-              }}
+              className="font-extrabold text-lg tracking-tight text-emerald-700 hover:text-emerald-800 transition-colors"
             >
               ICU杯
             </Link>
 
-            <nav style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <nav className="flex items-center gap-1">
+              <NavLink href="/events" label="Events" />
               <NavLink href={routes.players} label="Players" />
-              <NavLink href={routes.adminScores} label="Admin / Scores" />
-              <NavLink href={routes.adminPlayers} label="Admin / Players" />
+              <span className="w-px h-4 bg-gray-200 mx-1" />
+              <NavLink href={routes.adminScores} label="Admin / Scores" small />
+              <NavLink href={routes.adminPlayers} label="Admin / Players" small />
             </nav>
           </div>
         </header>
 
-        <main style={{ maxWidth: 980, margin: "0 auto" }}>
+        <main className="max-w-5xl mx-auto px-4 py-8">
           {children}
         </main>
 
-        <footer style={{ padding: 24, color: "#888", textAlign: "center" }}>
-          ICU杯 © {new Date().getFullYear()}
+        <footer className="py-6 text-center text-xs text-slate-400 border-t border-gray-200 mt-8">
+          ICU杯 &copy; {new Date().getFullYear()}
         </footer>
       </body>
     </html>

@@ -128,174 +128,211 @@ export default function ScoresClient({
   );
 
   return (
-    <main style={{ padding: 24, maxWidth: 800 }}>
-      <h1>ICU杯 成績入力</h1>
+    <div className="max-w-3xl">
+      <h1 className="text-3xl font-bold text-slate-900 mb-8">ICU杯 成績入力</h1>
 
-      {/* 大会情報 */}
-      <section style={{ marginTop: 16, padding: 16, border: "1px solid #ddd", borderRadius: 6 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ margin: 0 }}>{isEditing ? "大会を編集" : "新しい大会を追加"}</h2>
+      {/* 大会情報フォーム */}
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-semibold text-slate-900">
+            {isEditing ? "大会を編集" : "新しい大会を追加"}
+          </h2>
           {isEditing && (
-            <button onClick={resetForm} style={{ color: "#666" }}>
+            <button
+              onClick={resetForm}
+              className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+            >
               ✕ キャンセル
             </button>
           )}
         </div>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "90px 1fr",
-          gap: "10px 12px",
-          alignItems: "center",
-          maxWidth: 420,
-          marginTop: 12,
-        }}>
-          <label>大会名</label>
-          <input
-            value={eventName}
-            onChange={(e) => setEventName(e.target.value)}
-            placeholder="例：第十一回 ICU杯"
-            style={{ padding: "6px 8px" }}
-          />
-          <label>開催日</label>
-          <input
-            type="date"
-            value={eventDate}
-            onChange={(e) => setEventDate(e.target.value)}
-            style={{ padding: "6px 8px" }}
-          />
-          <label>コース</label>
-          <select
-            value={courseId}
-            onChange={(e) => setCourseId(e.target.value)}
-            style={{ padding: "6px 8px" }}
-          >
-            <option value="">-- 選択してください --</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+        <div className="space-y-4 max-w-md">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">大会名</label>
+            <input
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              placeholder="例：第十一回 ICU杯"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">開催日</label>
+            <input
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">コース</label>
+            <select
+              value={courseId}
+              onChange={(e) => setCourseId(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition bg-white"
+            >
+              <option value="">-- 選択してください --</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </section>
 
       {/* スコア入力 */}
-      <section style={{ marginTop: 24 }}>
-        <h2>スコア入力</h2>
-        <table style={{ borderCollapse: "collapse", marginTop: 8, width: "100%" }}>
-          <thead>
-            <tr style={{ background: "#f5f5f5" }}>
-              <th style={th}>名前</th>
-              <th style={th}>OUT</th>
-              <th style={th}>IN</th>
-              <th style={th}>TOTAL</th>
-              <th style={th}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i}>
-                <td style={td}>
-                  <select
-                    value={r.player_id}
-                    onChange={(e) => updateRow(i, { player_id: e.target.value })}
-                    style={{ width: "100%", padding: "6px 4px" }}
-                  >
-                    <option value="">-- 選択 --</option>
-                    {players.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </td>
-                <td style={td}>
-                  <input
-                    type="number"
-                    value={r.out}
-                    onChange={(e) => updateRow(i, { out: e.target.value === "" ? "" : Number(e.target.value) })}
-                    style={{ width: 64, padding: "6px 4px", background: invalidScore(r.out) ? "#ffcccc" : undefined }}
-                  />
-                </td>
-                <td style={td}>
-                  <input
-                    type="number"
-                    value={r.inn}
-                    onChange={(e) => updateRow(i, { inn: e.target.value === "" ? "" : Number(e.target.value) })}
-                    style={{ width: 64, padding: "6px 4px", background: invalidScore(r.inn) ? "#ffcccc" : undefined }}
-                  />
-                </td>
-                <td style={{ ...td, textAlign: "center", fontWeight: "bold" }}>
-                  {total(r) ?? "-"}
-                </td>
-                <td style={td}>
-                  <button onClick={() => setRows((prev) => prev.filter((_, idx) => idx !== i))}>削除</button>
-                </td>
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-slate-900">スコア入力</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 text-slate-500 text-xs uppercase tracking-wide">
+                <th className="px-4 py-3 text-left font-semibold">名前</th>
+                <th className="px-4 py-3 text-center font-semibold">OUT</th>
+                <th className="px-4 py-3 text-center font-semibold">IN</th>
+                <th className="px-4 py-3 text-center font-semibold">TOTAL</th>
+                <th className="px-4 py-3"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <button onClick={() => setRows((prev) => [...prev, emptyRow()])} style={{ marginTop: 8 }}>
-          ＋ 行を追加
-        </button>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {rows.map((r, i) => (
+                <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/40"}>
+                  <td className="px-4 py-2">
+                    <select
+                      value={r.player_id}
+                      onChange={(e) => updateRow(i, { player_id: e.target.value })}
+                      className="w-full px-2 py-1.5 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white"
+                    >
+                      <option value="">-- 選択 --</option>
+                      {players.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    <input
+                      type="number"
+                      value={r.out}
+                      onChange={(e) => updateRow(i, { out: e.target.value === "" ? "" : Number(e.target.value) })}
+                      className={`w-16 px-2 py-1.5 rounded border text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+                        invalidScore(r.out)
+                          ? "border-red-300 bg-red-50 text-red-700"
+                          : "border-gray-300"
+                      }`}
+                    />
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    <input
+                      type="number"
+                      value={r.inn}
+                      onChange={(e) => updateRow(i, { inn: e.target.value === "" ? "" : Number(e.target.value) })}
+                      className={`w-16 px-2 py-1.5 rounded border text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+                        invalidScore(r.inn)
+                          ? "border-red-300 bg-red-50 text-red-700"
+                          : "border-gray-300"
+                      }`}
+                    />
+                  </td>
+                  <td className="px-4 py-2 text-center font-bold text-slate-900">
+                    {total(r) ?? "-"}
+                  </td>
+                  <td className="px-4 py-2">
+                    <button
+                      onClick={() => setRows((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50"
+                    >
+                      削除
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-6 py-3 border-t border-gray-100">
+          <button
+            onClick={() => setRows((prev) => [...prev, emptyRow()])}
+            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+          >
+            ＋ 行を追加
+          </button>
+        </div>
       </section>
 
       {/* 保存ボタン */}
-      <section style={{ marginTop: 32 }}>
+      <section className="mb-12">
         <button
           onClick={handleSave}
           disabled={status === "saving"}
-          style={{
-            padding: "12px 32px",
-            background: "#111",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            fontSize: 16,
-            cursor: status === "saving" ? "wait" : "pointer",
-          }}
+          className={`px-8 py-3 rounded-xl text-white font-semibold text-base shadow-sm transition-all ${
+            status === "saving"
+              ? "bg-emerald-400 cursor-wait"
+              : "bg-emerald-600 hover:bg-emerald-700 active:scale-95"
+          }`}
         >
           {status === "saving" ? "保存中..." : isEditing ? "更新する" : "保存する"}
         </button>
 
         {status === "ok" && (
-          <p style={{ color: "#008800", marginTop: 12 }}>
+          <p className="mt-3 text-sm text-emerald-700 font-medium">
             ✓ {isEditing ? "更新" : "保存"}しました。1〜2分後にサイトに反映されます。
           </p>
         )}
         {status === "error" && (
-          <p style={{ color: "#cc0000", marginTop: 12 }}>エラー: {errorMsg}</p>
+          <p className="mt-3 text-sm text-red-600">エラー: {errorMsg}</p>
         )}
       </section>
 
       {/* 既存大会一覧 */}
-      <section style={{ marginTop: 48 }}>
-        <h2>既存の大会一覧</h2>
-        <table style={{ borderCollapse: "collapse", width: "100%", marginTop: 8 }}>
-          <thead>
-            <tr style={{ background: "#f5f5f5" }}>
-              <th style={th}>大会名</th>
-              <th style={th}>開催日</th>
-              <th style={th}>参加人数</th>
-              <th style={th}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedEvents.map((e) => (
-              <tr key={e.id} style={{ background: e.id === editingId ? "#fffbe6" : undefined }}>
-                <td style={td}>{e.name}</td>
-                <td style={td}>{e.event_date}</td>
-                <td style={{ ...td, textAlign: "center" }}>{e.scores.length}人</td>
-                <td style={td}>
-                  <button onClick={() => loadEvent(e)}>
-                    {e.id === editingId ? "編集中" : "編集"}
-                  </button>
-                </td>
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-slate-900">既存の大会一覧</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 text-slate-500 text-xs uppercase tracking-wide">
+                <th className="px-4 py-3 text-left font-semibold">大会名</th>
+                <th className="px-4 py-3 text-left font-semibold">開催日</th>
+                <th className="px-4 py-3 text-center font-semibold">参加人数</th>
+                <th className="px-4 py-3"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {sortedEvents.map((e) => (
+                <tr
+                  key={e.id}
+                  className={
+                    e.id === editingId
+                      ? "bg-amber-50"
+                      : "hover:bg-gray-50 transition-colors"
+                  }
+                >
+                  <td className="px-4 py-3 font-medium text-slate-900">{e.name}</td>
+                  <td className="px-4 py-3 text-slate-500">{e.event_date}</td>
+                  <td className="px-4 py-3 text-center text-slate-500">{e.scores.length}人</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => loadEvent(e)}
+                      className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                        e.id === editingId
+                          ? "bg-amber-200 text-amber-800"
+                          : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      }`}
+                    >
+                      {e.id === editingId ? "編集中" : "編集"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
-    </main>
+    </div>
   );
 }
-
-const th: React.CSSProperties = { border: "1px solid #ddd", padding: "8px 12px", textAlign: "left" };
-const td: React.CSSProperties = { border: "1px solid #ddd", padding: "6px 8px" };

@@ -10,7 +10,11 @@ export default async function EventDetailPage({
   const { id: eventId } = await params;
 
   const event = getEvent(eventId);
-  if (!event) return <main style={{ padding: 24 }}>Event not found</main>;
+  if (!event) {
+    return (
+      <div className="py-16 text-center text-slate-500">Event not found</div>
+    );
+  }
 
   const scores = getScoresForEvent(eventId);
 
@@ -72,18 +76,37 @@ export default async function EventDetailPage({
   });
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>{event.name}</h1>
-      <p style={{ color: "#666" }}>
-        {event.event_date} / {event.course?.name ?? "-"}
-      </p>
+    <div>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">{event.name}</h1>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {event.event_date && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium">
+              📅 {event.event_date}
+            </span>
+          )}
+          {event.course?.name && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-sm font-medium">
+              ⛳ {event.course.name}
+            </span>
+          )}
+        </div>
+      </div>
 
-      <h2 style={{ marginTop: 16 }}>結果</h2>
-      <ResultsTable results={results} />
+      {/* Results */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-slate-900">結果</h2>
+        </div>
+        <div className="p-6">
+          <ResultsTable results={results} />
+        </div>
+      </div>
 
-      <p style={{ marginTop: 12, color: "#666" }}>
+      <p className="mt-4 text-xs text-slate-400">
         ※ Net = Gross − この大会時点のHC（V1）
       </p>
-    </main>
+    </div>
   );
 }
