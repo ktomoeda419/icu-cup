@@ -27,14 +27,18 @@ function normalize(s: string) {
     .replace(/[‐-–—−]/g, "-");
 }
 
+const uid = () => Math.random().toString(36).slice(2, 10);
+
 export default function ScoresPage() {
-  // 初期ロードが完了したか（復元→保存の順序事故を防ぐ）
   const hydratedRef = useRef(false);
 
   const [rows, setRows] = useState<Row[]>(
     Array.from({ length: 6 }, () => ({ name: "", out: "", in: "" }))
   );
   const [players, setPlayers] = useState<Player[]>([]);
+  const [eventName, setEventName] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [courseId, setCourseId] = useState("");
 
   useEffect(() => {
     try {
@@ -43,25 +47,22 @@ export default function ScoresPage() {
     } catch {}
   }, []);
 
-  // 初回：保存データがあれば復元（ここが終わるまで保存しない）
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setRows(JSON.parse(saved));
     } catch {
-      // 何もしない（壊れたJSON等）
     } finally {
       hydratedRef.current = true;
     }
   }, []);
 
-  // 変更時：自動保存（初期復元が終わってからのみ）
   useEffect(() => {
     if (!hydratedRef.current) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
   }, [rows]);
 
-  const updateRow = (i: number, key: keyof Row, value: any) => {
+  const updateRow = (i: number, key: keyof Row, value: string | number) => {
     const next = [...rows];
     next[i] = { ...next[i], [key]: value };
     setRows(next);
@@ -75,6 +76,7 @@ export default function ScoresPage() {
     r.out !== "" && r.in !== "" ? Number(r.out) + Number(r.in) : "";
 
   const invalidOutIn = (v: number | "") => v !== "" && (v < 30 || v > 80);
+
   const matchPlayer = (nameRaw: string): Player | null => {
     const key = normalize(nameRaw);
     if (!key) return null;
@@ -85,36 +87,42 @@ export default function ScoresPage() {
     return null;
   };
 
-  const downloadCsv = () => {
-    const header = ["name", "out", "in", "total"];
-    const lines = rows.map((r) => {
-      const t = total(r);
-      const safe = (s: string) => `"${(s ?? "").replace(/"/g, '""')}"`;
-      const out = r.out === "" ? "" : String(r.out);
-      const inn = r.in === "" ? "" : String(r.in);
-      const tot = t === "" ? "" : String(t);
-      return [safe(r.name), out, inn, tot].join(",");
+  const downloadJson = () => {
+    const scores = rows
+      .filter((r) => r.name.trim() !== "")
+      .map((r) => {
+        const matched = matchPlayer(r.name);
+        const t = total(r);
+        return {
+          player_id: matched?.id ?? r.name.trim(),
+          out_score: r.out === "" ? null : Number(r.out),
+          in_score: r.in === "" ? null : Number(r.in),
+          total_score: t === "" ? null : t,
+        };
+      });
+
+    const eventEntry = {
+      id: uid(),
+      name: eventName.trim() || "大会名未入力",
+      event_date: eventDate || "0000-00-00",
+      course_id: courseId.trim() || "",
+      scores,
+    };
+
+    const blob = new Blob([JSON.stringify(eventEntry, null, 2)], {
+      type: "application/json;charset=utf-8;",
     });
-    const csv = [header.join(","), ...lines].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
     a.href = url;
-    a.download = "icu-cup-scores.csv";
+    a.download = `event-${eventDate || "unknown"}.json`;
     a.click();
-
     URL.revokeObjectURL(url);
   };
 
   const clearAll = () => {
-    // confirmが邪魔してるケースもあるので、まず確実に消す
     localStorage.removeItem(STORAGE_KEY);
     setRows(Array.from({ length: 6 }, () => ({ name: "", out: "", in: "" })));
-
-    // それでも表示が残る（キャッシュ/復元）時の保険：再読み込み
-    // ※不要なら消してOK
     setTimeout(() => window.location.reload(), 50);
   };
 
@@ -122,9 +130,33 @@ export default function ScoresPage() {
     <main style={{ padding: 24 }}>
       <h1>ICU杯 成績入力</h1>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+      <section style={{ marginTop: 16, padding: 12, border: "1px solid #ddd", maxWidth: 480 }}>
+        <h2 style={{ marginTop: 0 }}>大会情報</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 8 }}>
+          <div>大会名</div>
+          <input
+            value={eventName}
+            onChange={(e) => setEventName(e.target.value)}
+            placeholder="例：第3回 ICU杯"
+          />
+          <div>開催日</div>
+          <input
+            type="date"
+            value={eventDate}
+            onChange={(e) => setEventDate(e.target.value)}
+          />
+          <div>コースID</div>
+          <input
+            value={courseId}
+            onChange={(e) => setCourseId(e.target.value)}
+            placeholder="courses.json の id を入力"
+          />
+        </div>
+      </section>
+
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
         <button onClick={addRow}>＋ 行を追加</button>
-        <button onClick={downloadCsv}>CSVダウンロード</button>
+        <button onClick={downloadJson}>JSONダウンロード</button>
         <button onClick={clearAll}>クリア</button>
       </div>
 
@@ -197,8 +229,18 @@ export default function ScoresPage() {
       </table>
 
       <p style={{ marginTop: 12, color: "#666" }}>
-        ※ 自動保存されます（リロードしても消えません） / OUT・IN が 30–80 以外は赤表示
+        ※ 自動保存されます / OUT・IN が 30–80 以外は赤表示
       </p>
+
+      <section style={{ marginTop: 24, padding: 12, border: "1px solid #ddd", background: "#f9f9f9" }}>
+        <h2 style={{ marginTop: 0 }}>使い方</h2>
+        <ol style={{ paddingLeft: 20, lineHeight: 2 }}>
+          <li>大会情報（大会名・開催日・コースID）を入力</li>
+          <li>スコアを入力（名前はplayersマスタのエイリアスと一致すると✓になります）</li>
+          <li>「JSONダウンロード」で event-YYYY-MM-DD.json を保存</li>
+          <li>ダウンロードしたJSONの内容を <code>data/events.json</code> の配列に追加してGitHubにコミット</li>
+        </ol>
+      </section>
     </main>
   );
 }

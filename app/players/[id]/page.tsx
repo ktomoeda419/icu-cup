@@ -1,7 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { getPlayer, getScoresForPlayer } from "@/lib/data";
 import { differential, handicapV1 } from "@/lib/handicap";
 import HcChart from "./HcChart";
-
 
 export default async function PlayerDetail({
   params,
@@ -10,33 +9,10 @@ export default async function PlayerDetail({
 }) {
   const { id: playerId } = await params;
 
-  const { data: player, error: playerError } = await supabase
-    .from("players")
-    .select("id,name,gender")
-    .eq("id", playerId)
-    .single();
-
-  if (playerError) {
-    return <main style={{ padding: 24 }}>Error: {playerError.message}</main>;
-  }
+  const player = getPlayer(playerId);
   if (!player) return <main style={{ padding: 24 }}>Player not found</main>;
 
-  const { data: scores, error } = await supabase
-    .from("scores")
-    .select(
-      "total_score,out_score,in_score,created_at, event:events(id,name,event_date, course:courses(name,regular_course_rating,regular_slope,red_course_rating,red_slope))"
-    )
-    .eq("player_id", playerId)
-    .order("created_at", { ascending: true });
-
-  if (error) return <main style={{ padding: 24 }}>Error: {error.message}</main>;
-
-  // event_date で時系列に並べ替え（created_at は入力順になりがち）
-  const sortedScores = (scores || []).slice().sort((a: any, b: any) => {
-    const da = a.event?.event_date ? new Date(a.event.event_date).getTime() : 0;
-    const db = b.event?.event_date ? new Date(b.event.event_date).getTime() : 0;
-    return da - db;
-  });
+  const scores = getScoresForPlayer(playerId);
 
   type TrendRow = {
     event_date: string;
@@ -52,12 +28,12 @@ export default async function PlayerDetail({
   const trend: TrendRow[] = [];
   const diffsForHc: number[] = [];
 
-  for (const s of sortedScores as any[]) {
-    const course = s.event?.course;
+  for (const s of scores) {
+    const course = s.event.course;
     const gross = Number(s.total_score);
 
-    const event_date = s.event?.event_date || "-";
-    const event_name = s.event?.name || "-";
+    const event_date = s.event.event_date || "-";
+    const event_name = s.event.name || "-";
     const course_name = course?.name || "-";
 
     let cr: number | null = null;
@@ -69,13 +45,11 @@ export default async function PlayerDetail({
         player.gender === "M"
           ? Number(course.regular_course_rating)
           : Number(course.red_course_rating);
-
       slope =
         player.gender === "M"
           ? Number(course.regular_slope)
           : Number(course.red_slope);
 
-      // レート/スロープが欠けてる場合は HC 計算から除外（表示だけは残す）
       if (
         Number.isFinite(gross) &&
         Number.isFinite(cr) &&
@@ -94,14 +68,13 @@ export default async function PlayerDetail({
       event_name,
       course_name,
       gross,
-      cr: Number.isFinite(cr as any) ? (cr as number) : null,
-      slope: Number.isFinite(slope as any) ? (slope as number) : null,
+      cr: Number.isFinite(cr as number) ? (cr as number) : null,
+      slope: Number.isFinite(slope as number) ? (slope as number) : null,
       diff,
       hc_after,
     });
   }
 
-  // 現在HC（最新）
   const hc = diffsForHc.length > 0 ? handicapV1(diffsForHc) : 0;
 
   return (
@@ -112,7 +85,7 @@ export default async function PlayerDetail({
         <b>現在HC（V1）:</b> {hc}
       </p>
       <p style={{ color: "#666" }}>HC計算に使用したラウンド数: {diffsForHc.length}</p>
-      
+
       <h2 style={{ marginTop: 24 }}>HC推移（グラフ）</h2>
       <HcChart data={trend} />
 
@@ -168,11 +141,11 @@ export default async function PlayerDetail({
           </tr>
         </thead>
         <tbody>
-          {(sortedScores || []).map((s: any, i: number) => (
+          {scores.map((s, i) => (
             <tr key={i}>
-              <td>{s.event?.event_date || "-"}</td>
-              <td>{s.event?.name || "-"}</td>
-              <td>{s.event?.course?.name || "-"}</td>
+              <td>{s.event.event_date || "-"}</td>
+              <td>{s.event.name || "-"}</td>
+              <td>{s.event.course?.name || "-"}</td>
               <td>{s.out_score ?? "-"}</td>
               <td>{s.in_score ?? "-"}</td>
               <td>
@@ -180,7 +153,7 @@ export default async function PlayerDetail({
               </td>
             </tr>
           ))}
-          {(sortedScores || []).length === 0 && (
+          {scores.length === 0 && (
             <tr>
               <td colSpan={6} style={{ color: "#666" }}>
                 まだスコアがありません

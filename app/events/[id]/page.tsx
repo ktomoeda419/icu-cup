@@ -1,9 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { getEvent, getScoresForEvent, getPastScoresForPlayer } from "@/lib/data";
 import { differential, handicapV1 } from "@/lib/handicap";
 import ResultsTable from "./ResultsTable";
-
-export const revalidate = 0;
-export const dynamic = "force-dynamic";
 
 export default async function EventDetailPage({
   params,
@@ -12,95 +9,26 @@ export default async function EventDetailPage({
 }) {
   const { id: eventId } = await params;
 
-  // 大会情報
-  const { data: event, error: eventError } = await supabase
-    .from("events")
-    .select(
-      "id,name,event_date, course:courses(id,name,regular_course_rating,regular_slope,red_course_rating,red_slope)"
-    )
-    .eq("id", eventId)
-    .single();
+  const event = getEvent(eventId);
+  if (!event) return <main style={{ padding: 24 }}>Event not found</main>;
 
-  if (eventError) {
-    return <main style={{ padding: 24 }}>Error: {eventError.message}</main>;
-  }
-  if (!event) {
-    return <main style={{ padding: 24 }}>Event not found</main>;
-  }
+  const scores = getScoresForEvent(eventId);
 
-  // course が配列で返るケースに対応
-  const eventCourse = Array.isArray((event as any).course)
-    ? (event as any).course[0]
-    : (event as any).course;
-
-  // スコア（全員分）
-  const { data: scores, error: scoreError } = await supabase
-    .from("scores")
-    .select(
-      `
-      id,
-      player_id,
-      total_score,
-      out_score,
-      in_score,
-      created_at,
-      player:players(id,name,gender)
-    `
-    )
-    .eq("event_id", eventId);
-
-  if (scoreError) {
-    return <main style={{ padding: 24 }}>Error: {scoreError.message}</main>;
-  }
-
-  const rows = scores || [];
-
-  // ===== 各プレーヤーの「大会日までのHC」を計算 =====
   const hcByPlayerId: Record<string, number> = {};
 
-  for (const r of rows as any[]) {
+  for (const r of scores) {
     const pid = r.player_id;
     if (hcByPlayerId[pid] != null) continue;
 
     const gender = r.player?.gender ?? "M";
-
-    // そのプレーヤーの「この大会より前」のスコア
-    const { data: pastScores, error: pastError } = await supabase
-      .from("scores")
-      .select(
-        `
-        total_score,
-        event:events(
-          event_date,
-          course:courses(
-            regular_course_rating,
-            regular_slope,
-            red_course_rating,
-            red_slope
-          )
-        )
-      `
-      )
-      .eq("player_id", pid)
-      .lt("event.event_date", (event as any).event_date);
-
-    if (pastError) {
-      return <main style={{ padding: 24 }}>Error: {pastError.message}</main>;
-    }
+    const pastScores = getPastScoresForPlayer(pid, event.event_date);
 
     const diffs: number[] = [];
-
-    for (const ps of pastScores || []) {
-      // event / course が配列で返るケースに対応
-      const ev = Array.isArray((ps as any).event)
-        ? (ps as any).event[0]
-        : (ps as any).event;
-
-      const courseRaw = ev?.course;
-      const course = Array.isArray(courseRaw) ? courseRaw[0] : courseRaw;
+    for (const ps of pastScores) {
+      const course = ps.event.course;
       if (!course) continue;
 
-      const gross = Number((ps as any).total_score);
+      const gross = Number(ps.total_score);
       const cr =
         gender === "M"
           ? Number(course.regular_course_rating)
@@ -123,8 +51,7 @@ export default async function EventDetailPage({
     hcByPlayerId[pid] = diffs.length > 0 ? handicapV1(diffs) : 0;
   }
 
-  // ===== ResultsTable に渡すデータ =====
-  const results = rows.map((r: any) => {
+  const results = scores.map((r) => {
     const hc = hcByPlayerId[r.player_id] ?? 0;
     const gross = Number(r.total_score);
     const net =
@@ -146,9 +73,9 @@ export default async function EventDetailPage({
 
   return (
     <main style={{ padding: 24 }}>
-      <h1>{(event as any).name}</h1>
+      <h1>{event.name}</h1>
       <p style={{ color: "#666" }}>
-        {(event as any).event_date} / {eventCourse?.name ?? "-"}
+        {event.event_date} / {event.course?.name ?? "-"}
       </p>
 
       <h2 style={{ marginTop: 16 }}>結果</h2>

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "4489032d-63aa-4a1e-80fa-4e95f804d0d3",
+    "name": "ICU Country Club (Test)",
+    "regular_course_rating": 72.5,
+    "regular_slope": 130,
+    "red_course_rating": 74,
+    "red_slope": 125
+  },
+  {
+    "id": "c4440622-f368-4cb1-8edb-fd9a2de7a476",
+    "name": "秩父国際カントリークラブ",
+    "regular_course_rating": 67.4,
+    "regular_slope": 113,
+    "red_course_rating": 63,
+    "red_slope": 113
+  },
+  {
+    "id": "4168f324-f3e3-42ba-b776-6d1120e42224",
+    "name": "東京湾カントリークラブ",
+    "regular_course_rating": 69.5,
+    "regular_slope": 113,
+    "red_course_rating": 69.5,
+    "red_slope": 113
+  },
+  {
+    "id": "fa579f40-3496-408a-84d6-cc64e8a574ac",
+    "name": "佐野ゴルフクラブ",
+    "regular_course_rating": 68.5,
+    "regular_slope": 113,
+    "red_course_rating": 61.5,
+    "red_slope": 113
+  },
+  {
+    "id": "5356faaf-6737-462d-bddf-c41256201732",
+    "name": "ユニオンエース ゴルフクラブ",
+    "regular_course_rating": 70,
+    "regular_slope": 125,
+    "red_course_rating": 62.4,
+    "red_slope": 117
+  },
+  {
+    "id": "4ebfdf59-dadd-4d59-b60b-92ed813caabe",
+    "name": "サンコー72カントリークラブ",
+    "regular_course_rating": 72,
+    "regular_slope": 113,
+    "red_course_rating": 74,
+    "red_slope": 113
+  },
+  {
+    "id": "7a4231f3-d46f-43ac-84d0-d5c90111f69b",
+    "name": "ABCいすみゴルフコース",
+    "regular_course_rating": 71.5,
+    "regular_slope": 113,
+    "red_course_rating": 73,
+    "red_slope": 113
+  },
+  {
+    "id": "e3825ede-7a83-47cb-9da4-3351d87c4b5e",
+    "name": "箱根くらかけゴルフ場",
+    "regular_course_rating": 70.5,
+    "regular_slope": 113,
+    "red_course_rating": 72,
+    "red_slope": 113
+  },
+  {
+    "id": "acb17eca-67f8-421a-ab5c-767391b4acab",
+    "name": "千葉桜の里ゴルフクラブ",
+    "regular_course_rating": 72.7,
+    "regular_slope": 113,
+    "red_course_rating": 70.2,
+    "red_slope": 113
+  },
+  {
+    "id": "270162c4-f539-4d47-a060-3fb61d193514",
+    "name": "JGM霞丘ゴルフクラブ",
+    "regular_course_rating": 72,
+    "regular_slope": 113,
+    "red_course_rating": 69.5,
+    "red_slope": 113
+  },
+  {
+    "id": "431991c7-3768-401e-82e2-82c8f91ba5ae",
+    "name": "ザナショナルカントリー倶楽部 埼玉",
+    "regular_course_rating": 72,
+    "regular_slope": 113,
+    "red_course_rating": 69.5,
+    "red_slope": 113
+  },
+  {
+    "id": "1b6611da-7843-4c26-9623-056fd9faf858",
+    "name": "ザ・ナショナルCC埼玉",
+    "regular_course_rating": 71.8,
+    "regular_slope": 130,
+    "red_course_rating": 73.5,
+    "red_slope": 128
+  }
+]
