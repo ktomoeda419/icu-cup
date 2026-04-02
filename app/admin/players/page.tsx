@@ -188,9 +188,7 @@ export default function PlayersPage() {
         </table>
       </section>
 
-      <p style={{ marginTop: 12, color: "#666" }}>
-        ※ データはブラウザ内（localStorage）に保存されます。将来Supabaseに移行できます。
-      </p>
+
     </main>
   );
 }
