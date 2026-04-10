@@ -760,25 +760,5 @@
         "total_score": 126
       }
     ]
-  },
-  {
-    "id": "b7p1a9xr",
-    "name": "テスト",
-    "event_date": "2026-04-15",
-    "course_id": "4489032d-63aa-4a1e-80fa-4e95f804d0d3",
-    "scores": [
-      {
-        "player_id": "8dc7946f-f4f6-4909-a21a-4994cbd2187d",
-        "out_score": 33,
-        "in_score": 37,
-        "total_score": 70
-      },
-      {
-        "player_id": "9576d89e-10fa-43e0-92eb-3ff24518390c",
-        "out_score": 40,
-        "in_score": 40,
-        "total_score": 80
-      }
-    ]
   }
 ]
