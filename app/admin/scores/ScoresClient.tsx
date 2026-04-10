@@ -38,6 +38,7 @@ export default function ScoresClient({
   const [rows, setRows] = useState<ScoreRow[]>([emptyRow()]);
   const [status, setStatus] = useState<"idle" | "saving" | "ok" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const isEditing = editingId !== null;
 
@@ -120,6 +121,26 @@ export default function ScoresClient({
     } catch (e: unknown) {
       setErrorMsg(e instanceof Error ? e.message : "エラーが発生しました");
       setStatus("error");
+    }
+  };
+
+  const handleDelete = async (event: Event) => {
+    if (!confirm(`「${event.name}」を削除しますか？この操作は取り消せません。`)) return;
+    setDeletingId(event.id);
+    try {
+      const res = await fetch("/api/save-event", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: event.id, name: event.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      resetForm();
+    } catch (e: unknown) {
+      setErrorMsg(e instanceof Error ? e.message : "削除中にエラーが発生しました");
+      setStatus("error");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -315,7 +336,7 @@ export default function ScoresClient({
                   <td className="px-4 py-3 font-medium text-slate-900">{e.name}</td>
                   <td className="px-4 py-3 text-slate-500">{e.event_date}</td>
                   <td className="px-4 py-3 text-center text-slate-500">{e.scores.length}人</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 flex gap-2">
                     <button
                       onClick={() => loadEvent(e)}
                       className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
@@ -325,6 +346,13 @@ export default function ScoresClient({
                       }`}
                     >
                       {e.id === editingId ? "編集中" : "編集"}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(e)}
+                      disabled={deletingId === e.id}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-wait"
+                    >
+                      {deletingId === e.id ? "削除中..." : "削除"}
                     </button>
                   </td>
                 </tr>
