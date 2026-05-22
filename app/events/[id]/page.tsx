@@ -2,6 +2,8 @@ import { getEvent, getScoresForEvent, getPastScoresForPlayer } from "@/lib/data"
 import { differential, handicapV1 } from "@/lib/handicap";
 import ResultsTable from "./ResultsTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function EventDetailPage({
   params,
 }: {
@@ -9,14 +11,14 @@ export default async function EventDetailPage({
 }) {
   const { id: eventId } = await params;
 
-  const event = getEvent(eventId);
+  const event = await getEvent(eventId);
   if (!event) {
     return (
       <div className="py-16 text-center text-slate-500">Event not found</div>
     );
   }
 
-  const scores = getScoresForEvent(eventId);
+  const scores = await getScoresForEvent(eventId);
 
   const hcByPlayerId: Record<string, number> = {};
 
@@ -25,7 +27,7 @@ export default async function EventDetailPage({
     if (hcByPlayerId[pid] != null) continue;
 
     const gender = r.player?.gender ?? "M";
-    const pastScores = getPastScoresForPlayer(pid, event.event_date);
+    const pastScores = await getPastScoresForPlayer(pid, event.event_date);
 
     const diffs: number[] = [];
     for (const ps of pastScores) {
@@ -103,8 +105,6 @@ export default async function EventDetailPage({
           <ResultsTable results={results} />
         </div>
       </div>
-
-
     </div>
   );
 }

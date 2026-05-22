@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getPlayers } from "@/lib/data";
 
-export default function PlayersPage() {
-  const players = getPlayers();
+export const dynamic = "force-dynamic";
+
+export default async function PlayersPage() {
+  const players = await getPlayers();
 
   return (
     <div>

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getEvents } from "@/lib/data";
 
-export default function EventsPage() {
-  const events = getEvents();
+export const dynamic = "force-dynamic";
+
+export default async function EventsPage() {
+  const events = await getEvents();
 
   return (
     <div>

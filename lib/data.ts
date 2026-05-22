@@ -1,6 +1,5 @@
-import playersData from "@/data/players.json";
+import { sql } from "@vercel/postgres";
 import coursesData from "@/data/courses.json";
-import eventsData from "@/data/events.json";
 
 export type Gender = "M" | "F";
 
@@ -35,62 +34,131 @@ export type Event = {
   scores: Score[];
 };
 
-const players = playersData as Player[];
 const courses = coursesData as Course[];
-const events = eventsData as Event[];
-
-export function getPlayers(): Player[] {
-  return [...players].sort((a, b) => a.name.localeCompare(b.name, "ja"));
-}
-
-export function getPlayer(id: string): Player | null {
-  return players.find((p) => p.id === id) ?? null;
-}
 
 export function getCourse(id: string): Course | null {
   return courses.find((c) => c.id === id) ?? null;
 }
 
-export function getEvents(): (Event & { course: Course | null })[] {
-  return [...events]
-    .sort((a, b) => b.event_date.localeCompare(a.event_date))
-    .map((e) => ({ ...e, course: getCourse(e.course_id) }));
+export async function getPlayers(): Promise<Player[]> {
+  const { rows } = await sql`
+    SELECT id, name, gender, aliases FROM players ORDER BY name
+  `;
+  return rows as Player[];
 }
 
-export function getEvent(id: string): (Event & { course: Course | null }) | null {
-  const e = events.find((e) => e.id === id) ?? null;
-  if (!e) return null;
-  return { ...e, course: getCourse(e.course_id) };
+export async function getPlayer(id: string): Promise<Player | null> {
+  const { rows } = await sql`
+    SELECT id, name, gender, aliases FROM players WHERE id = ${id}
+  `;
+  return (rows[0] as Player) ?? null;
 }
 
-export function getScoresForEvent(
+export async function getEvents(): Promise<(Event & { course: Course | null })[]> {
+  const { rows: eventRows } = await sql`
+    SELECT id, name, event_date, course_id FROM events ORDER BY event_date DESC
+  `;
+
+  const { rows: scoreRows } = await sql`
+    SELECT event_id, player_id, out_score, in_score, total_score FROM scores
+  `;
+
+  return eventRows.map((e) => ({
+    id: e.id,
+    name: e.name,
+    event_date: e.event_date,
+    course_id: e.course_id,
+    scores: scoreRows
+      .filter((s) => s.event_id === e.id)
+      .map((s) => ({
+        player_id: s.player_id,
+        out_score: s.out_score,
+        in_score: s.in_score,
+        total_score: s.total_score,
+      })),
+    course: getCourse(e.course_id),
+  }));
+}
+
+export async function getEvent(
+  id: string
+): Promise<(Event & { course: Course | null }) | null> {
+  const { rows } = await sql`
+    SELECT id, name, event_date, course_id FROM events WHERE id = ${id}
+  `;
+  if (!rows[0]) return null;
+
+  const e = rows[0];
+  const { rows: scoreRows } = await sql`
+    SELECT player_id, out_score, in_score, total_score FROM scores WHERE event_id = ${id}
+  `;
+
+  return {
+    id: e.id,
+    name: e.name,
+    event_date: e.event_date,
+    course_id: e.course_id,
+    scores: scoreRows as Score[],
+    course: getCourse(e.course_id),
+  };
+}
+
+export async function getScoresForEvent(
   eventId: string
-): (Score & { player: Player | null })[] {
-  const e = events.find((e) => e.id === eventId);
-  if (!e) return [];
-  return e.scores.map((s) => ({ ...s, player: getPlayer(s.player_id) }));
+): Promise<(Score & { player: Player | null })[]> {
+  const { rows } = await sql`
+    SELECT
+      s.player_id, s.out_score, s.in_score, s.total_score,
+      p.id AS p_id, p.name AS p_name, p.gender AS p_gender, p.aliases AS p_aliases
+    FROM scores s
+    LEFT JOIN players p ON s.player_id = p.id
+    WHERE s.event_id = ${eventId}
+  `;
+
+  return rows.map((r) => ({
+    player_id: r.player_id,
+    out_score: r.out_score,
+    in_score: r.in_score,
+    total_score: r.total_score,
+    player: r.p_id
+      ? { id: r.p_id, name: r.p_name, gender: r.p_gender as Gender, aliases: r.p_aliases }
+      : null,
+  }));
 }
 
-export function getScoresForPlayer(
+export async function getScoresForPlayer(
   playerId: string
-): (Score & { event: Event & { course: Course | null } })[] {
-  const result: (Score & { event: Event & { course: Course | null } })[] = [];
-  for (const e of events) {
-    const score = e.scores.find((s) => s.player_id === playerId);
-    if (score) {
-      result.push({ ...score, event: { ...e, course: getCourse(e.course_id) } });
-    }
-  }
-  return result.sort((a, b) =>
-    a.event.event_date.localeCompare(b.event.event_date)
-  );
+): Promise<(Score & { event: Event & { course: Course | null } })[]> {
+  const { rows } = await sql`
+    SELECT
+      s.player_id, s.out_score, s.in_score, s.total_score,
+      e.id AS event_id, e.name AS event_name, e.event_date, e.course_id
+    FROM scores s
+    JOIN events e ON s.event_id = e.id
+    WHERE s.player_id = ${playerId}
+    ORDER BY e.event_date ASC
+  `;
+
+  return rows.map((r) => ({
+    player_id: r.player_id,
+    out_score: r.out_score,
+    in_score: r.in_score,
+    total_score: r.total_score,
+    event: {
+      id: r.event_id,
+      name: r.event_name,
+      event_date: r.event_date,
+      course_id: r.course_id,
+      scores: [],
+      course: getCourse(r.course_id),
+    },
+  }));
 }
 
-export function getPastScoresForPlayer(
+export async function getPastScoresForPlayer(
   playerId: string,
   beforeDate: string
-): (Score & { event: Event & { course: Course | null } })[] {
-  return getScoresForPlayer(playerId).filter(
-    (s) => s.event.event_date < beforeDate
-  );
+): Promise<(Score & { event: Event & { course: Course | null } })[]> {
+  const scores = await getScoresForPlayer(playerId);
+  return scores.filter((s) => s.event.event_date < beforeDate);
 }

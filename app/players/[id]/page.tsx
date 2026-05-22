@@ -2,6 +2,8 @@ import { getPlayer, getScoresForPlayer } from "@/lib/data";
 import { differential, handicapV1 } from "@/lib/handicap";
 import HcChart from "./HcChart";
 
+export const dynamic = "force-dynamic";
+
 export default async function PlayerDetail({
   params,
 }: {
@@ -9,14 +11,14 @@ export default async function PlayerDetail({
 }) {
   const { id: playerId } = await params;
 
-  const player = getPlayer(playerId);
+  const player = await getPlayer(playerId);
   if (!player) {
     return (
       <div className="py-16 text-center text-slate-500">Player not found</div>
     );
   }
 
-  const scores = getScoresForPlayer(playerId);
+  const scores = await getScoresForPlayer(playerId);
 
   type TrendRow = {
     event_date: string;
