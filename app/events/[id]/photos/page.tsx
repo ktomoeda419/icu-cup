@@ -1,5 +1,7 @@
 import { getEvent } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+
 export default async function EventPhotos({
   params,
 }: {
@@ -7,7 +9,7 @@ export default async function EventPhotos({
 }) {
   const { id: eventId } = await params;
 
-  const event = getEvent(eventId);
+  const event = await getEvent(eventId);
   if (!event) return <main style={{ padding: 24 }}>Event not found</main>;
 
   return (
