@@ -94,5 +94,13 @@
     "regular_slope": 130,
     "red_course_rating": 73.5,
     "red_slope": 128
+  },
+  {
+    "id": "a3f2c1d4-8e7b-4a90-b5c6-9d1e2f3a4b5c",
+    "name": "宮の森カントリー倶楽部",
+    "regular_course_rating": 70.6,
+    "regular_slope": 113,
+    "red_course_rating": 72.0,
+    "red_slope": 113
   }
 ]
