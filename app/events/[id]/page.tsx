@@ -54,7 +54,7 @@ export default async function EventDetailPage({
       }
     }
 
-    hcByPlayerId[pid] = diffs.length > 0 ? handicapV1(diffs) : 0;
+    hcByPlayerId[pid] = diffs.length > 0 ? handicapV1(diffs) : (r.player?.initial_hc ?? 0);
   }
 
   const results = scores.map((r) => {

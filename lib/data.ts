@@ -8,6 +8,7 @@ export type Player = {
   name: string;
   gender: Gender;
   aliases: string[];
+  initial_hc: number | null;
 };
 
 export type Course = {
@@ -42,14 +43,14 @@ export function getCourse(id: string): Course | null {
 
 export async function getPlayers(): Promise<Player[]> {
   const { rows } = await sql`
-    SELECT id, name, gender, aliases FROM players ORDER BY name
+    SELECT id, name, gender, aliases, initial_hc FROM players ORDER BY name
   `;
   return rows as Player[];
 }
 
 export async function getPlayer(id: string): Promise<Player | null> {
   const { rows } = await sql`
-    SELECT id, name, gender, aliases FROM players WHERE id = ${id}
+    SELECT id, name, gender, aliases, initial_hc FROM players WHERE id = ${id}
   `;
   return (rows[0] as Player) ?? null;
 }
@@ -109,7 +110,7 @@ export async function getScoresForEvent(
   const { rows } = await sql`
     SELECT
       s.player_id, s.out_score, s.in_score, s.total_score,
-      p.id AS p_id, p.name AS p_name, p.gender AS p_gender, p.aliases AS p_aliases
+      p.id AS p_id, p.name AS p_name, p.gender AS p_gender, p.aliases AS p_aliases, p.initial_hc AS p_initial_hc
     FROM scores s
     LEFT JOIN players p ON s.player_id = p.id
     WHERE s.event_id = ${eventId}
@@ -121,7 +122,7 @@ export async function getScoresForEvent(
     in_score: r.in_score,
     total_score: r.total_score,
     player: r.p_id
-      ? { id: r.p_id, name: r.p_name, gender: r.p_gender as Gender, aliases: r.p_aliases }
+      ? { id: r.p_id, name: r.p_name, gender: r.p_gender as Gender, aliases: r.p_aliases, initial_hc: r.p_initial_hc ?? null }
       : null,
   }));
 }

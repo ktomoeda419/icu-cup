@@ -6,9 +6,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { name, gender, aliases } = await req.json();
+  const { name, gender, aliases, initial_hc } = await req.json();
   await sql`
-    UPDATE players SET name = ${name}, gender = ${gender}, aliases = ${aliases}
+    UPDATE players SET name = ${name}, gender = ${gender}, aliases = ${aliases}, initial_hc = ${initial_hc ?? null}
     WHERE id = ${id}
   `;
   return NextResponse.json({ ok: true });

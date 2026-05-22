@@ -81,7 +81,7 @@ export default async function PlayerDetail({
     });
   }
 
-  const hc = diffsForHc.length > 0 ? handicapV1(diffsForHc) : 0;
+  const hc = diffsForHc.length > 0 ? handicapV1(diffsForHc) : (player.initial_hc ?? 0);
 
   return (
     <div>

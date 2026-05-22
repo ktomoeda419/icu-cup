@@ -8,6 +8,7 @@ type Player = {
   name: string;
   gender: Gender;
   aliases: string[];
+  initial_hc: number | null;
 };
 
 const uid = () => crypto.randomUUID();
@@ -26,6 +27,7 @@ export default function PlayersPage() {
   const [name, setName] = useState("");
   const [gender, setGender] = useState<Gender>("M");
   const [aliasesText, setAliasesText] = useState("");
+  const [initialHc, setInitialHc] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -53,11 +55,12 @@ export default function PlayersPage() {
     await fetch("/api/players", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: uid(), name: n, gender, aliases }),
+      body: JSON.stringify({ id: uid(), name: n, gender, aliases, initial_hc: initialHc !== "" ? Number(initialHc) : null }),
     });
     setName("");
     setAliasesText("");
     setGender("M");
+    setInitialHc("");
     await fetchPlayers();
     setSaving(false);
   };
@@ -111,6 +114,17 @@ export default function PlayersPage() {
             <option value="F">女性（Red）</option>
           </select>
 
+          <div>仮ハンデ（任意）</div>
+          <input
+            type="number"
+            min={0}
+            max={54}
+            step={0.1}
+            value={initialHc}
+            onChange={(e) => setInitialHc(e.target.value)}
+            placeholder="例：18.0"
+          />
+
           <div>別名（任意）</div>
           <textarea
             value={aliasesText}
@@ -148,6 +162,7 @@ export default function PlayersPage() {
               <tr>
                 <th>正式名</th>
                 <th>性別</th>
+                <th>仮ハンデ</th>
                 <th>別名（カンマ区切り）</th>
                 <th></th>
               </tr>
@@ -170,6 +185,20 @@ export default function PlayersPage() {
                       <option value="M">男性</option>
                       <option value="F">女性</option>
                     </select>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min={0}
+                      max={54}
+                      step={0.1}
+                      value={p.initial_hc ?? ""}
+                      onChange={(e) =>
+                        updatePlayer(p.id, { initial_hc: e.target.value !== "" ? Number(e.target.value) : null })
+                      }
+                      style={{ width: 80 }}
+                      placeholder="-"
+                    />
                   </td>
                   <td>
                     <input
