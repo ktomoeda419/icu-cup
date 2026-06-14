@@ -1,7 +1,13 @@
 import { sql } from "@vercel/postgres";
 import { NextRequest, NextResponse } from "next/server";
+import { getActiveGroupId } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
+  const groupId = await getActiveGroupId();
+  if (!groupId) {
+    return NextResponse.json({ error: "グループ未選択" }, { status: 403 });
+  }
+
   const event = await req.json();
 
   const exists = await sql`SELECT id FROM events WHERE id = ${event.id}`;
@@ -14,8 +20,8 @@ export async function POST(req: NextRequest) {
     await sql`DELETE FROM scores WHERE event_id = ${event.id}`;
   } else {
     await sql`
-      INSERT INTO events (id, name, event_date, course_id)
-      VALUES (${event.id}, ${event.name}, ${event.event_date}, ${event.course_id})
+      INSERT INTO events (id, name, event_date, course_id, group_id)
+      VALUES (${event.id}, ${event.name}, ${event.event_date}, ${event.course_id}, ${groupId})
     `;
   }
 

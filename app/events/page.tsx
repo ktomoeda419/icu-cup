@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getEvents } from "@/lib/data";
+import { getActiveGroupId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
-  const events = await getEvents();
+  const groupId = await getActiveGroupId();
+  if (!groupId) redirect("/");
+  const events = await getEvents(groupId);
 
   return (
     <div>

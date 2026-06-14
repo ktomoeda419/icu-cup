@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getPlayers } from "@/lib/data";
+import { getActiveGroupId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function PlayersPage() {
-  const players = await getPlayers();
+  const groupId = await getActiveGroupId();
+  if (!groupId) redirect("/");
+  const players = await getPlayers(groupId);
 
   return (
     <div>

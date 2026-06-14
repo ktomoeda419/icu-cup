@@ -70,6 +70,12 @@ export default function HomePage() {
           description="プレーヤーマスタ・名寄せ・性別"
           href={routes.adminPlayers}
         />
+        <Card
+          icon="🏷️"
+          title="グループ管理（幹事）"
+          description="複数コンペの作成・切替・メンバー招待"
+          href={routes.adminGroups}
+        />
       </div>
     </div>
   );

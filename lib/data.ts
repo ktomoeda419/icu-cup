@@ -3,6 +3,12 @@ import coursesData from "@/data/courses.json";
 
 export type Gender = "M" | "F";
 
+export type Group = {
+  id: string;
+  name: string;
+  access_code: string;
+};
+
 export type Player = {
   id: string;
   name: string;
@@ -41,9 +47,47 @@ export function getCourse(id: string): Course | null {
   return courses.find((c) => c.id === id) ?? null;
 }
 
-export async function getPlayers(): Promise<Player[]> {
+// ---- グループ（複数大会） ----
+
+export async function getGroups(): Promise<Group[]> {
   const { rows } = await sql`
-    SELECT id, name, gender, aliases, initial_hc FROM players ORDER BY name
+    SELECT id, name, access_code FROM groups ORDER BY created_at
+  `;
+  return rows as Group[];
+}
+
+export async function getGroup(id: string): Promise<Group | null> {
+  const { rows } = await sql`
+    SELECT id, name, access_code FROM groups WHERE id = ${id}
+  `;
+  return (rows[0] as Group) ?? null;
+}
+
+export async function getGroupByAccessCode(code: string): Promise<Group | null> {
+  const { rows } = await sql`
+    SELECT id, name, access_code FROM groups WHERE access_code = ${code}
+  `;
+  return (rows[0] as Group) ?? null;
+}
+
+export async function createGroup(
+  id: string,
+  name: string,
+  accessCode: string
+): Promise<void> {
+  await sql`
+    INSERT INTO groups (id, name, access_code)
+    VALUES (${id}, ${name}, ${accessCode})
+  `;
+}
+
+// ---- プレーヤー / 大会（グループでスコープ） ----
+
+export async function getPlayers(groupId: string): Promise<Player[]> {
+  const { rows } = await sql`
+    SELECT id, name, gender, aliases, initial_hc FROM players
+    WHERE group_id = ${groupId}
+    ORDER BY name
   `;
   return rows as Player[];
 }
@@ -55,9 +99,13 @@ export async function getPlayer(id: string): Promise<Player | null> {
   return (rows[0] as Player) ?? null;
 }
 
-export async function getEvents(): Promise<(Event & { course: Course | null })[]> {
+export async function getEvents(
+  groupId: string
+): Promise<(Event & { course: Course | null })[]> {
   const { rows: eventRows } = await sql`
-    SELECT id, name, event_date, course_id FROM events ORDER BY event_date DESC
+    SELECT id, name, event_date, course_id FROM events
+    WHERE group_id = ${groupId}
+    ORDER BY event_date DESC
   `;
 
   const { rows: scoreRows } = await sql`

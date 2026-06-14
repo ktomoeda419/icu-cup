@@ -33,7 +33,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="password"
-            placeholder="パスワード"
+            placeholder="アクセスコード"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
