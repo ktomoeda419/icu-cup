@@ -5,6 +5,21 @@ import eventsData from "@/data/events.json";
 
 export const dynamic = "force-dynamic";
 
+type SeedPlayer = { id: string; name: string; gender: string; aliases: string[] };
+type SeedScore = {
+  player_id: string;
+  out_score?: number | null;
+  in_score?: number | null;
+  total_score: number;
+};
+type SeedEvent = {
+  id: string;
+  name: string;
+  event_date: string;
+  course_id: string;
+  scores?: SeedScore[];
+};
+
 export async function POST() {
   try {
     // スキーマ作成
@@ -38,16 +53,16 @@ export async function POST() {
     `;
 
     // プレーヤーをシード（既存は上書き）
-    for (const p of playersData as any[]) {
+    for (const p of playersData as SeedPlayer[]) {
       await sql`
         INSERT INTO players (id, name, gender, aliases)
-        VALUES (${p.id}, ${p.name}, ${p.gender}, ${p.aliases})
+        VALUES (${p.id}, ${p.name}, ${p.gender}, ${p.aliases as unknown as string})
         ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, gender = EXCLUDED.gender, aliases = EXCLUDED.aliases
       `;
     }
 
     // イベントをシード
-    for (const e of eventsData as any[]) {
+    for (const e of eventsData as SeedEvent[]) {
       await sql`
         INSERT INTO events (id, name, event_date, course_id)
         VALUES (${e.id}, ${e.name}, ${e.event_date}, ${e.course_id})
@@ -65,8 +80,9 @@ export async function POST() {
     }
 
     return NextResponse.json({ ok: true, message: "DB初期化・シード完了" });
-  } catch (e: any) {
+  } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

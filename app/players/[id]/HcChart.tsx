@@ -33,7 +33,7 @@ export default function HcChart({ data }: { data: TrendRow[] }) {
           <XAxis dataKey="event_date" />
           <YAxis reversed domain={["auto", "auto"]} />
           <Tooltip
-            formatter={(value: any, name) => {
+            formatter={(value: number | string | Array<number | string> | undefined, name) => {
               if (name === "hc_after") return [`HC ${value}`, "HC"];
               if (name === "diff") return [`Diff ${value}`, "Diff"];
               return value;

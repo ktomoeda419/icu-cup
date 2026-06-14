@@ -36,6 +36,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# capacitor (iOS native project is generated on the Mac via `npx cap add ios`)
+/ios/App/Pods
+/ios/App/App/public
+/ios/.gitignore
+/ios/App/Podfile.lock
+DerivedData/
+*.xcuserstate
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

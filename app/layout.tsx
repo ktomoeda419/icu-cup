@@ -1,10 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "./components/Header";
 
 export const metadata: Metadata = {
   title: "ICU杯",
   description: "ICU高校34期生 ゴルフ大会ポータル",
+  appleWebApp: {
+    capable: true,
+    title: "ICU杯",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  // iOS のノッチ/ホームインジケータ領域まで描画を広げる（safe-area と併用）
+  viewportFit: "cover",
+  themeColor: "#f9fafb",
+  // ネイティブアプリらしく、ピンチズームによる意図しない拡大を防ぐ
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

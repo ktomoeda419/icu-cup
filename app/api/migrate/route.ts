@@ -10,7 +10,8 @@ export async function POST() {
       ADD COLUMN IF NOT EXISTS initial_hc NUMERIC DEFAULT NULL
     `;
     return NextResponse.json({ ok: true, message: "マイグレーション完了" });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -90,7 +90,7 @@ export default function ResultsTable({ results }: { results: ResultRow[] }) {
           </tr>
         </thead>
         <tbody>
-          {ranked.map((r: any) => (
+          {ranked.map((r) => (
             <tr key={r.playerId}>
               <td><b>{r.rank}</b></td>
               <td>

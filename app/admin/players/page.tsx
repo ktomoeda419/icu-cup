@@ -39,6 +39,8 @@ export default function PlayersPage() {
   };
 
   useEffect(() => {
+    // マウント時に一覧を取得する意図的なパターン
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlayers();
   }, []);
 
